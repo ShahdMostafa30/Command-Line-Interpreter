@@ -2,9 +2,11 @@ import java.util.Scanner;
 
 public class Terminal {
     Parser parser;
+    String currentDirectory;
 
     public Terminal() {
         parser = new Parser();
+        currentDirectory = System.getProperty("user.dir");
     }
 
     public static void showPrompt() {
