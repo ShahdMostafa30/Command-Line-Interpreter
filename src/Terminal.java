@@ -1,12 +1,13 @@
+import java.nio.file.Path;
 import java.util.Scanner;
 
 public class Terminal {
     Parser parser;
-    String currentDirectory;
+    Path currentDirectory;
 
     public Terminal() {
         parser = new Parser();
-        currentDirectory = System.getProperty("user.dir");
+        currentDirectory = Path.of(System.getProperty("user.dir"));
     }
 
     public static void showPrompt() {
