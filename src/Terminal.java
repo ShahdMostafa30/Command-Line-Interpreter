@@ -15,10 +15,8 @@ public class Terminal {
     }
 
     public void echo(String[] args) {
-        for (int i = 0; i < args.length; i++) {
-            if (args[i].isEmpty()) continue;
-            System.out.print(args[i] + " ");
-        }
+        for (String arg : args)
+            System.out.print(arg + " ");
         System.out.println();
     }
 
