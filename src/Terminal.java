@@ -3,6 +3,7 @@ import java.util.Scanner;
 import java.nio.file.Files;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Paths;
 public class Terminal {
     Parser parser;
     Path currentDirectory;
@@ -25,7 +26,7 @@ public class Terminal {
         String file = args[0];
         try {
             Path filePath;
-            if (isAbsolutePath(file)) {
+            if (Paths.get(file).isAbsolute()) {
                 filePath = Path.of(file);
             } else {
                 filePath = currentDirectory.resolve(file);
