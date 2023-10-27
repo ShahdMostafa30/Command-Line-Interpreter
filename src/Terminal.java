@@ -9,6 +9,14 @@ public class Terminal {
         parser = new Parser();
         currentDirectory = Path.of(System.getProperty("user.dir"));
     }
+    public boolean isAbsolutePath(String path) {
+        return path.startsWith("/");
+    }
+
+    public boolean isRelativePath(String path) {
+        return !path.startsWith("/");
+    }
+
 
     public static void showPrompt() {
         System.out.print("> ");
