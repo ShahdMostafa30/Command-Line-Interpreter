@@ -6,9 +6,9 @@ public class Parser {
     private String[] commandArgs;
 
     public boolean parse(String command) {
+        command = command.trim(); // remove leading and trailing whitespace
         if (command.isEmpty())
             return false;
-        command = command.trim(); // remove leading and trailing whitespace
         // split on whitespace
         String[] commandParts = command.split(" ");
 
