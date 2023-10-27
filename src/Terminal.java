@@ -107,6 +107,8 @@ public class Terminal {
             // If the file already exists, do nothing (real touch simulation)
         } catch (IOException e) {
             System.out.println("touch: cannot create file '" + file + "': Permission denied or invalid path/file name");
+        } catch (InvalidPathException e) {
+            System.out.println("touch: cannot create file '" + file + "': Invalid path or file name");
         }
     }
 
@@ -137,17 +139,22 @@ public class Terminal {
 
         // If one argument is passed
         String dir = args[0];
-        Path dirPath = currentDirectory.resolve(dir);
-        if (Files.isDirectory(dirPath)) { // if the directory exists
-            currentDirectory = dirPath; // change the current directory
-        } else {
-            // print error message
-            System.out.println("cd: cannot change directory '" + dir + "': No such directory");
+        try {
+            Path dirPath = currentDirectory.resolve(dir);
+            if (Files.isDirectory(dirPath)) { // if the directory exists
+                currentDirectory = dirPath; // change the current directory
+            } else {
+                // print error message
+                System.out.println("cd: cannot change directory '" + dir + "': No such directory");
+            }
+        } catch (InvalidPathException e) {
+            System.out.println("cd: cannot change directory '" + dir + "': Invalid path or directory name");
         }
     }
 
     /**
      * Entry point of the program
+     *
      * @param args The arguments passed to the program (not used)
      */
     public static void main(String[] args) {
