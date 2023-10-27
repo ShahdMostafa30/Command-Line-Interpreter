@@ -35,6 +35,8 @@ public class Terminal {
             echo(commandArgs);
         } else if (commandName.equals("rm")) {
             rm(commandArgs);
+        } else if (commandName.equals("cat")) {
+            cat(commandArgs);
         } else if (commandName.equals("pwd")) {
             pwd();
         } else if (commandName.equals("touch")) {
@@ -64,16 +66,57 @@ public class Terminal {
 
     // rm command: removes a file
     public void rm(String[] args) {
-        String file = args[0];
-        try {
-            Path filePath = currentDirectory.resolve(file);
-            Files.delete(filePath);
-        } catch (NoSuchFileException e) {
-            System.out.println("rm: cannot remove '" + file + "': No such file or directory");
-        } catch (IOException e) {
-            System.out.println("rm: cannot remove '" + file + "': Permission denied");
+        if(args.length == 1){
+            String file = args[0];
+            try {
+                Path filePath = currentDirectory.resolve(file);
+                // Check if the path points to a regular file before deleting
+                if (Files.isRegularFile(filePath)) {
+                    Files.delete(filePath);
+                } else {
+                    System.out.println("rm: cannot remove '" + file + "': Not a regular file");
+                }
+            } catch (NoSuchFileException e) {
+                System.out.println("rm: cannot remove '" + file + "': No such file or directory");
+            } catch (IOException e) {
+                System.out.println("rm: cannot remove '" + file + "': Permission denied");
+            }
+        }else{
+            System.out.println("rm: Invalid number of arguments");
         }
     }
+
+    // cat command: prints the content of a file or concatenates the content of two files and prints it
+    public void cat(String[] args) {
+        if (args.length == 1) {
+            try {
+                Path filePath = currentDirectory.resolve(args[0]);
+                // Read and print the content of the single file
+                System.out.println(Files.readString(filePath));
+            } catch (NoSuchFileException e) {
+                System.out.println("cat: " + args[0] + ": No such file or directory");
+            } catch (IOException e) {
+                System.out.println("cat: " + args[0] + ": Error reading the file");
+            }
+        } else if (args.length == 2) {
+            try {
+                Path filePath1 = currentDirectory.resolve(args[0]);
+                Path filePath2 = currentDirectory.resolve(args[1]);
+                // Read the content of two files and concatenate them with a line break
+                String content1 = Files.readString(filePath1);
+                String content2 = Files.readString(filePath2);
+                System.out.println(content1 + "\n" + content2);
+            } catch (NoSuchFileException e) {
+                System.out.println("cat: No such file or directory");
+            } catch (IOException e) {
+                System.out.println("cat: Error reading the file");
+            }
+        } else {
+            System.out.println("cat: Invalid number of arguments");
+        }
+    }
+
+
 
     /**
      * pwd command: prints the current directory
