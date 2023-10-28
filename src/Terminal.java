@@ -128,9 +128,15 @@ public class Terminal {
     }
 
     public void rmdir(String[] args){
-        if(args.length > 1)
+        if(args.length == 0)
         {
-            System.out.println("invalid number of arguments");
+            System.out.println("rmdir: missing file operand");
+            return;
+        }
+
+        else if(args.length > 1)
+        {
+            System.out.println("rmdir: too many arguments (currently only supports one argument)");
             return;
         }
 
