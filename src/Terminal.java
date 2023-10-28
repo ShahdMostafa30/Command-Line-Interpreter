@@ -133,11 +133,21 @@ public class Terminal {
         }
     }
 
+    /**
+     * isEmptyDir: checks if a directory is empty or not
+     * @param dir
+     * @return
+     */
     public boolean isEmptyDir(File dir) {
         String[] contents = dir.list();
         return  contents == null ||contents.length == 0 ;
     }
 
+    /**
+     * rmdir command: removes a directory
+     *
+     * @param args The array of directory paths to be removed (currently only supports one file)
+     */
     public void rmdir(String[] args){
         if(args.length == 0)
         {
@@ -184,6 +194,11 @@ public class Terminal {
         }
     }
 
+    /**
+     * mkdir command: creates a directory
+     *
+     * @param args The array of directory paths to be created
+     */
     public void mkdir(String[] args){
         if(args.length < 1)
         {
