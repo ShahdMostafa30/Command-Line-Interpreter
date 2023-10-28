@@ -1,7 +1,7 @@
 import java.io.File;
 import java.nio.file.*;
 import java.nio.file.*;
-import java.util.Scanner;
+import java.util.*;
 import java.io.IOException;
 
 public class Terminal {
@@ -51,7 +51,12 @@ public class Terminal {
             cd(commandArgs);
         } else if (commandName.equals("exit")) {
             System.exit(0);
-        } else {
+        } else if(commandName.equals("ls")) {
+            ls();
+        } else if(commandName.equals("ls-r")) {
+            lsr();
+        }
+        else {
             System.out.println(commandName + ": command not found");
         }
     }
@@ -69,6 +74,22 @@ public class Terminal {
             System.out.print(arg + " ");
         System.out.println();
     }
+
+    public void ls(){
+        File[] contents = currentDirectory.toFile().listFiles();
+        for(File file : contents){
+            System.out.println(file.getName());
+        }
+    }
+
+    public void lsr(){
+        File[] contents = currentDirectory.toFile().listFiles();
+        Arrays.sort(contents,Comparator.reverseOrder());
+        for(File file : contents){
+            System.out.println(file.getName());
+        }
+    }
+
     public boolean isEmptyDir(File dir){
         String[] contents = dir.list();
         return contents.length == 0 || contents == null;
