@@ -171,41 +171,23 @@ public class Terminal {
     public void mkdir(String[] args){
         if(args.length < 1)
         {
-            System.out.println("invalid input");
+            System.out.println("mkkdir: needs at least one argument");
             return;
         }
-
-        for(String dir : args){
-            Path dirPath = Paths.get(dir);
-            if(dirPath.isAbsolute())
-            {
-                try{
-                    File directory = new File(dir);
-                    if(directory.exists())
-                        System.out.println("\"Directory already exists at: \"" + directory.toPath());
-                    else{
-                        directory.mkdir();
-                    }
-
-                }catch (Exception e) {
-                    System.out.println("Error occurred while creating directory: " + e.getMessage());
+        try{
+            for(String dir : args){
+                Path DirPath = currentDirectory.resolve(dir);
+                File directory = new File(DirPath.toString());
+                if(directory.exists())
+                            System.out.println("\"Directory already exists at: \"" + directory.toPath());
+                else{
+                    directory.mkdir();
                 }
             }
-            else{
-                try{
-                    Path newDirPath = currentDirectory.resolve(dir);
-                    File directory = new File(newDirPath.toString());
-                    if(directory.exists())
-                        System.out.println("\"Directory already exists at: \"" + directory.toPath());
-                    else{
-                        directory.mkdir();
-                    }
-                } catch (InvalidPathException e){
-                    System.out.println("mkdir: failed to make directory '" + dir + "': Invalid Path");
-                } catch (Exception e) {
-                    System.out.println("Error occurred while creating directory: " + e.getMessage());
-                }
-            }
+        } catch (InvalidPathException e){
+            System.out.println("mkdir: failed to create directory '" + args[0] + "': Invalid path");
+        } catch (SecurityException e){
+            System.out.println("mkdir: failed to create directory '" + args[0] + "': Permission denied");
         }
     }
 
