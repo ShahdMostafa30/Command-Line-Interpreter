@@ -3,15 +3,39 @@ import java.nio.file.*;
 import java.util.*;
 import java.io.IOException;
 
+interface Command {
+    void execute(String[] args);
+}
+
 public class Terminal {
     Parser parser;
     Path currentDirectory;
     private ArrayList<String> commandHistory;
+    private HashMap<String, Command> commands;
 
     public Terminal() {
         parser = new Parser();
         currentDirectory = Path.of(System.getProperty("user.dir"));
         commandHistory = new ArrayList<>();
+        initCommands();
+    }
+
+    private void initCommands() {
+        commands = new HashMap<>();
+        // Methods that take a String[] as an argument
+        commands.put("echo", this::echo);
+        commands.put("cd", this::cd);
+        commands.put("ls", this::ls);
+        commands.put("mkdir", this::mkdir);
+        commands.put("rmdir", this::rmdir);
+        commands.put("touch", this::touch);
+        commands.put("rm", this::rm);
+        commands.put("cat", this::cat);
+        // Methods that take no arguments
+        commands.put("pwd", (String[] args) -> pwd());
+        commands.put("exit", (String[] args) -> System.exit(0));
+        commands.put("history", (String[] args) -> history());
+        commands.put("help", (String[] args) -> help());
     }
 
     public void showPrompt() {
@@ -39,33 +63,7 @@ public class Terminal {
 
     // Method that chooses which command to run
     public void chooseCommandAction() {
-        String commandName = parser.getCommandName();
-        String[] commandArgs = parser.getArgs();
-        if (commandName.equals("echo")) {
-            echo(commandArgs);
-        } else if (commandName.equals("rm")) {
-            rm(commandArgs);
-        } else if (commandName.equals("rmdir")) {
-            rmdir(commandArgs);
-        } else if (commandName.equals("mkdir")) {
-            mkdir(commandArgs);
-        } else if (commandName.equals("cat")) {
-            cat(commandArgs);
-        } else if (commandName.equals("pwd")) {
-            pwd();
-        } else if (commandName.equals("touch")) {
-            touch(commandArgs);
-        } else if (commandName.equals("cd")) {
-            cd(commandArgs);
-        } else if (commandName.equals("history")) {
-            history();
-        } else if (commandName.equals("ls")) {
-            ls(commandArgs);
-        } else if (commandName.equals("help")) {
-            help();
-        } else if (commandName.equals("exit")) {
-            System.exit(0);
-        }
+        commands.get(parser.getCommandName()).execute(parser.getArgs());
     }
 
     /**
