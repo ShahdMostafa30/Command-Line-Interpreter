@@ -135,7 +135,7 @@ public class Terminal {
 
     public boolean isEmptyDir(File dir) {
         String[] contents = dir.list();
-        return contents.length == 0 || contents == null;
+        return  contents == null ||contents.length == 0 ;
     }
 
     public void rmdir(String[] args){
@@ -154,12 +154,14 @@ public class Terminal {
         String dir = args[0];
         if (dir.equals("*")) {
             File[] contents = currentDirectory.toFile().listFiles();
-            for (File directory : contents) {
-                if (directory.isDirectory() && isEmptyDir(directory)) {
-                    try {
-                        Files.delete(directory.toPath());
-                    } catch (IOException e) {
-                        System.out.println("rmdir: failed to remove '" + directory.getName() + "': Permission denied");
+            if(contents != null){
+                for (File directory : contents) {
+                    if (directory.isDirectory() && isEmptyDir(directory)) {
+                        try {
+                            Files.delete(directory.toPath());
+                        } catch (IOException e) {
+                            System.out.println("rmdir: failed to remove '" + directory.getName() + "': Permission denied");
+                        }
                     }
                 }
             }
