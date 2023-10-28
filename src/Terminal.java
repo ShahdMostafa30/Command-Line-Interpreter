@@ -186,7 +186,7 @@ public class Terminal {
      * @param args The array of file paths to be removed (currently only supports one file)
      */
     public void rm(String[] args) {
-        if(args.length == 1){
+        if (args.length == 1) {
             String file = args[0];
             try {
                 Path filePath = currentDirectory.resolve(file);
@@ -200,8 +200,10 @@ public class Terminal {
                 System.out.println("rm: cannot remove '" + file + "': No such file or directory");
             } catch (IOException e) {
                 System.out.println("rm: cannot remove '" + file + "': Permission denied");
+            } catch (InvalidPathException e) {
+                System.out.println("rm: failed to remove '" + args[0] + "': Invalid path");
             }
-        }else{
+        } else {
             System.out.println("rm: Invalid number of arguments");
         }
     }
