@@ -121,6 +121,11 @@ public class Terminal {
         }
     }
 
+    /**
+     * cp command: copies a file to another location
+     *
+     * @param args The array of paths of files to copy (currently only supports two files)
+     */
     public void cp(String[] args){
         if(args.length == 0) {
             System.out.println("cp: missing file operand");
@@ -146,10 +151,11 @@ public class Terminal {
         }
     }
 
+    
     /**
      * isEmptyDir: checks if a directory is empty or not
-     * @param dir
-     * @return
+     * @param dir The directory to check
+     * @return true if the directory is empty, false otherwise
      */
     public boolean isEmptyDir(File dir) {
         String[] contents = dir.list();
