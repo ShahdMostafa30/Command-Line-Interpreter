@@ -61,6 +61,8 @@ public class Terminal {
             history();
         } else if (commandName.equals("ls")) {
             ls(commandArgs);
+        } else if (commandName.equals("cp")) {
+            cp(commandArgs);
         } else if (commandName.equals("help")) {
             help();
         } else if (commandName.equals("exit")) {
@@ -116,6 +118,31 @@ public class Terminal {
             }
         } catch (SecurityException | NullPointerException e) {
             System.out.println("ls: failed to list contents of '" + currentDirectory + "': Permission denied");
+        }
+    }
+
+    public void cp(String[] args){
+        if(args.length == 0) {
+            System.out.println("cp: missing file operand");
+            return;
+        }
+        else if(args.length > 2) {
+            System.out.println("cp: too many arguments (currently only supports two arguments)");
+            return;
+        }
+
+        String src = args[0];
+        String dest = args[1];
+        try {
+            Path srcPath = currentDirectory.resolve(src);
+            Path destPath = currentDirectory.resolve(dest);
+            Files.copy(srcPath, destPath , StandardCopyOption.REPLACE_EXISTING);
+        } catch (InvalidPathException e) {
+            System.out.println("cp: failed to copy '" + src + "': Invalid path");
+        } catch (NoSuchFileException e) {
+            System.out.println("cp: failed to copy '" + src + "': No such file or directory");
+        } catch (IOException e) {
+            System.out.println("cp: failed to copy '" + src + "': Permission denied");
         }
     }
 
