@@ -214,33 +214,25 @@ public class Terminal {
      * @param args The array of file paths to be printed or concatenated (one or two files)
      */
     public void cat(String[] args) {
-        if (args.length == 1) {
-            try {
-                Path filePath = currentDirectory.resolve(args[0]);
-                // Read and print the content of the single file
-                System.out.println(Files.readString(filePath));
-            } catch (NoSuchFileException e) {
-                System.out.println("cat: " + args[0] + ": No such file or directory");
-            } catch (IOException e) {
-                System.out.println("cat: " + args[0] + ": Error reading the file");
+        if(args.length == 1 || args.length == 2){
+            // Iterate over each argument to process
+            for (String arg : args) {
+                try {
+                    Path filePath = currentDirectory.resolve(arg);
+                    System.out.println(Files.readString(filePath));  // Read and print the content of the file
+                } catch (NoSuchFileException e) {
+                    System.out.println("cat: " + arg + ": No such file or directory");
+                } catch (IOException e) {
+                    System.out.println("cat: " + arg + ": Error reading the file");
+                } catch (InvalidPathException e) {
+                    System.out.println("cat: " + arg + ": Invalid path");
+                }
             }
-        } else if (args.length == 2) {
-            try {
-                Path filePath1 = currentDirectory.resolve(args[0]);
-                Path filePath2 = currentDirectory.resolve(args[1]);
-                // Read the content of two files and concatenate them with a line break
-                String content1 = Files.readString(filePath1);
-                String content2 = Files.readString(filePath2);
-                System.out.println(content1 + "\n" + content2);
-            } catch (NoSuchFileException e) {
-                System.out.println("cat: No such file or directory");
-            } catch (IOException e) {
-                System.out.println("cat: Error reading the file");
-            }
-        } else {
+        }else{
             System.out.println("cat: Invalid number of arguments");
         }
     }
+
 
     /**
      * history command: displays an enumerated list of past commands
