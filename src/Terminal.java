@@ -61,14 +61,32 @@ public class Terminal {
             history();
         }else if(commandName.equals("ls")) {
             ls(commandArgs);
-        }else if(commandName.equals("ls -r")){
-            ls(commandArgs);
-        }
-
-        else if (commandName.equals("exit")) {
+        }else if(commandName.equals("help")){
+            help();
+        }else if (commandName.equals("exit")) {
             System.exit(0);
         }
     }
+
+    public void help(){
+        System.out.println("1.help     -> prints the list of supported commands");
+        System.out.println("2.echo     -> prints the arguments passed to it");
+        System.out.println("3.pwd      -> prints the current working directory");
+        System.out.println("4.cd       -> changes the current working directory");
+        System.out.println("5.ls       -> lists the contents of the current directory");
+        System.out.println("6.ls -r    -> lists the contents of the current directory in reverse order");
+        System.out.println("7.cp       -> copies a file to a new location");
+        System.out.println("8.cp -r    -> copies a directory to a new location");
+        System.out.println("9.history  -> prints the last 5 commands");
+        System.out.println("10.mkdir   -> creates a new directory");
+        System.out.println("11.rmdir   -> removes an empty directory");
+        System.out.println("12.touch   -> creates a new file");
+        System.out.println("13.rm      -> removes a file");
+        System.out.println("14.cat     -> prints the contents of a file");
+        System.out.println("15.exit    -> exits the terminal");
+    }
+
+
 
     /**
      * Checks if a command is available in the list of supported commands.
