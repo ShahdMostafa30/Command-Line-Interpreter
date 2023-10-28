@@ -1,16 +1,21 @@
 import java.io.File;
 import java.nio.file.*;
 import java.nio.file.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Scanner;
 import java.io.IOException;
 
 public class Terminal {
     Parser parser;
     Path currentDirectory;
+    private ArrayList<String> commandHistory;
 
     public Terminal() {
         parser = new Parser();
         currentDirectory = Path.of(System.getProperty("user.dir"));
+        commandHistory = new ArrayList<>();
     }
 
     public static void showPrompt() {
@@ -24,7 +29,13 @@ public class Terminal {
             showPrompt();
             String command = scanner.nextLine();
             if (parser.parse(command)) {
-                chooseCommandAction();
+                String parsedCommand = parser.getCommandName();
+                if (isCommandAvailable(parsedCommand)) {
+                    commandHistory.add(command); // Add the command to the history
+                    chooseCommandAction();
+                } else {
+                    System.out.println(parsedCommand + ": command not found");
+                }
             } // else do nothing (empty command)
         }
     }
@@ -49,18 +60,25 @@ public class Terminal {
             touch(commandArgs);
         } else if (commandName.equals("cd")) {
             cd(commandArgs);
+        } else if (commandName.equals("history")) {
+            history();
         } else if (commandName.equals("exit")) {
             System.exit(0);
-        } else if(commandName.equals("ls")) {
-            ls();
-        } else if(commandName.equals("ls-r")) {
-            lsr();
-        }
-        else {
-            System.out.println(commandName + ": command not found");
         }
     }
 
+    /**
+     * Checks if a command is available in the list of supported commands.
+     *
+     * @param command The command to check for availability
+     * @return true if the command is available, false otherwise
+     */
+    private boolean isCommandAvailable(String command) {
+        List<String> availableCommands = Arrays.asList("echo", "pwd", "cd", "ls",
+                                                      "mkdir", "rmdir", "touch", "cp", "rm",
+                                                       "cat", "exit", "history");
+        return availableCommands.contains(command);
+    }
 
     // Command methods (called by chooseCommandAction)
 
@@ -75,25 +93,11 @@ public class Terminal {
         System.out.println();
     }
 
-    public void ls(){
-        File[] contents = currentDirectory.toFile().listFiles();
-        for(File file : contents){
-            System.out.println(file.getName());
-        }
-    }
-
-    public void lsr(){
-        File[] contents = currentDirectory.toFile().listFiles();
-        Arrays.sort(contents,Comparator.reverseOrder());
-        for(File file : contents){
-            System.out.println(file.getName());
-        }
-    }
-
     public boolean isEmptyDir(File dir){
         String[] contents = dir.list();
         return contents.length == 0 || contents == null;
     }
+
     public void rmdir(String[] args){
         if(args.length > 1)
         {
@@ -176,9 +180,13 @@ public class Terminal {
         }
     }
 
-    // rm command: removes a file
+    /**
+     * rm command: removes a file
+     *
+     * @param args The array of file paths to be removed (currently only supports one file)
+     */
     public void rm(String[] args) {
-        if(args.length == 1){
+        if (args.length == 1) {
             String file = args[0];
             try {
                 Path filePath = currentDirectory.resolve(file);
@@ -192,43 +200,52 @@ public class Terminal {
                 System.out.println("rm: cannot remove '" + file + "': No such file or directory");
             } catch (IOException e) {
                 System.out.println("rm: cannot remove '" + file + "': Permission denied");
+            } catch (InvalidPathException e) {
+                System.out.println("rm: failed to remove '" + args[0] + "': Invalid path");
             }
-        }else{
+        } else {
             System.out.println("rm: Invalid number of arguments");
         }
     }
 
-    // cat command: prints the content of a file or concatenates the content of two files and prints it
+    /**
+     * cat command: prints the content of a file or concatenates the content of two files and prints it
+     *
+     * @param args The array of file paths to be printed or concatenated (one or two files)
+     */
     public void cat(String[] args) {
-        if (args.length == 1) {
-            try {
-                Path filePath = currentDirectory.resolve(args[0]);
-                // Read and print the content of the single file
-                System.out.println(Files.readString(filePath));
-            } catch (NoSuchFileException e) {
-                System.out.println("cat: " + args[0] + ": No such file or directory");
-            } catch (IOException e) {
-                System.out.println("cat: " + args[0] + ": Error reading the file");
+        if(args.length == 1 || args.length == 2){
+            // Iterate over each argument to process
+            for (String arg : args) {
+                try {
+                    Path filePath = currentDirectory.resolve(arg);
+                    System.out.println(Files.readString(filePath));  // Read and print the content of the file
+                } catch (NoSuchFileException e) {
+                    System.out.println("cat: " + arg + ": No such file or directory");
+                } catch (IOException e) {
+                    System.out.println("cat: " + arg + ": Error reading the file");
+                } catch (InvalidPathException e) {
+                    System.out.println("cat: " + arg + ": Invalid path");
+                }
             }
-        } else if (args.length == 2) {
-            try {
-                Path filePath1 = currentDirectory.resolve(args[0]);
-                Path filePath2 = currentDirectory.resolve(args[1]);
-                // Read the content of two files and concatenate them with a line break
-                String content1 = Files.readString(filePath1);
-                String content2 = Files.readString(filePath2);
-                System.out.println(content1 + "\n" + content2);
-            } catch (NoSuchFileException e) {
-                System.out.println("cat: No such file or directory");
-            } catch (IOException e) {
-                System.out.println("cat: Error reading the file");
-            }
-        } else {
+        }else{
             System.out.println("cat: Invalid number of arguments");
         }
     }
 
 
+    /**
+     * history command: displays an enumerated list of past commands
+     */
+    public void history(){
+        if (commandHistory.isEmpty()) {
+            System.out.println("No commands in history");
+        } else {
+            for (int i = 0; i < commandHistory.size(); i++) {
+                System.out.println((i + 1) + " " + commandHistory.get(i));
+            }
+        }
+    }
 
     /**
      * pwd command: prints the current directory
