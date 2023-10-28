@@ -1,6 +1,5 @@
 import java.io.File;
 import java.nio.file.*;
-import java.nio.file.*;
 import java.util.*;
 import java.io.IOException;
 
@@ -15,8 +14,9 @@ public class Terminal {
         commandHistory = new ArrayList<>();
     }
 
-    public static void showPrompt() {
-        System.out.print("> ");
+    public void showPrompt() {
+        currentDirectory = currentDirectory.normalize();
+        System.out.print(currentDirectory + "> ");
     }
 
     // Main loop of the program interface
@@ -46,9 +46,9 @@ public class Terminal {
         } else if (commandName.equals("rm")) {
             rm(commandArgs);
         } else if (commandName.equals("rmdir")) {
-                rmdir(commandArgs);
+            rmdir(commandArgs);
         } else if (commandName.equals("mkdir")) {
-                mkdir(commandArgs);
+            mkdir(commandArgs);
         } else if (commandName.equals("cat")) {
             cat(commandArgs);
         } else if (commandName.equals("pwd")) {
@@ -59,16 +59,33 @@ public class Terminal {
             cd(commandArgs);
         } else if (commandName.equals("history")) {
             history();
-        }else if(commandName.equals("ls")) {
+        } else if (commandName.equals("ls")) {
             ls(commandArgs);
-        }else if(commandName.equals("ls -r")){
-            ls(commandArgs);
-        }
-
-        else if (commandName.equals("exit")) {
+        } else if (commandName.equals("help")) {
+            help();
+        } else if (commandName.equals("exit")) {
             System.exit(0);
         }
     }
+
+    public void help() {
+        System.out.println("1.help     -> prints the list of supported commands");
+        System.out.println("2.echo     -> prints the arguments passed to it");
+        System.out.println("3.pwd      -> prints the current working directory");
+        System.out.println("4.cd       -> changes the current working directory");
+        System.out.println("5.ls       -> lists the contents of the current directory");
+        System.out.println("6.ls -r    -> lists the contents of the current directory in reverse order");
+        System.out.println("7.cp       -> copies a file to a new location");
+        System.out.println("8.cp -r    -> copies a directory to a new location");
+        System.out.println("9.history  -> prints the last 5 commands");
+        System.out.println("10.mkdir   -> creates a new directory");
+        System.out.println("11.rmdir   -> removes an empty directory");
+        System.out.println("12.touch   -> creates a new file");
+        System.out.println("13.rm      -> removes a file");
+        System.out.println("14.cat     -> prints the contents of a file");
+        System.out.println("15.exit    -> exits the terminal");
+    }
+
 
     /**
      * Checks if a command is available in the list of supported commands.
@@ -78,8 +95,8 @@ public class Terminal {
      */
     private boolean isCommandAvailable(String command) {
         List<String> availableCommands = Arrays.asList("echo", "pwd", "cd", "ls",
-                                                      "mkdir", "rmdir", "touch", "cp", "rm",
-                                                       "cat", "exit", "history");
+                "mkdir", "rmdir", "touch", "cp", "rm",
+                "cat", "exit", "history");
         return availableCommands.contains(command);
     }
 
@@ -96,33 +113,27 @@ public class Terminal {
         System.out.println();
     }
 
-    public void ls(String []r){
-                File[] contents = currentDirectory.toFile().listFiles();
+    public void ls(String[] args) {
+        File[] contents = currentDirectory.toFile().listFiles();
         try {
-            if (r.length > 0 && r[0].equals("-r")) {
+            if (args.length > 0 && args[0].equals("-r")) {
                 Arrays.sort(contents, Comparator.reverseOrder());
-            }
-            else if(r.length>1){
+            } else if (args.length > 1) {
                 System.out.println("ls: too many arguments (currently only supports one argument)");
                 return;
-            }
-            else if(r.length>0 && !r[0].equals("-r")){
-                System.out.println("ls: invalid argument");
+            } else if (args.length > 0) {
+                System.out.println("ls: invalid argument (currently only supports -r)");
                 return;
             }
             for (File file : contents) {
                 System.out.println(file.getName());
             }
-        }
-        catch (NullPointerException e){
-            System.out.println("No such directory");
-        }
-        catch (SecurityException e){
-            System.out.println("Permission denied");
+        } catch (SecurityException | NullPointerException e) {
+            System.out.println("ls: failed to list contents of '" + currentDirectory + "': Permission denied");
         }
     }
 
-    public boolean isEmptyDir(File dir){
+    public boolean isEmptyDir(File dir) {
         String[] contents = dir.list();
         return contents.length == 0 || contents == null;
     }
@@ -141,10 +152,10 @@ public class Terminal {
         }
 
         String dir = args[0];
-        if(dir.equals("*")){
+        if (dir.equals("*")) {
             File[] contents = currentDirectory.toFile().listFiles();
-            for(File directory : contents){
-                if(directory.isDirectory() && isEmptyDir(directory)){
+            for (File directory : contents) {
+                if (directory.isDirectory() && isEmptyDir(directory)) {
                     try {
                         Files.delete(directory.toPath());
                     } catch (IOException e) {
@@ -152,23 +163,20 @@ public class Terminal {
                     }
                 }
             }
-        }
-        else{
+        } else {
             try {
                 Path dirPath = currentDirectory.resolve(dir);
-                if(!Files.isDirectory(dirPath)){
+                if (!Files.isDirectory(dirPath)) {
                     System.out.println("rmdir: failed to remove '" + dir + "': Not a directory");
-                }
-                else if(!isEmptyDir(dirPath.toFile())){
+                } else if (!isEmptyDir(dirPath.toFile())) {
                     System.out.println("rmdir: failed to remove '" + dir + "': Directory not empty");
-                }
-                else
+                } else
                     Files.delete(dirPath);
             } catch (NoSuchFileException e) {
                 System.out.println("rmdir: failed to remove '" + dir + "': No such file or directory");
             } catch (IOException e) {
                 System.out.println("rmdir: failed to remove '" + dir + "': Permission denied");
-            }catch (InvalidPathException e){
+            } catch (InvalidPathException e) {
                 System.out.println("rmdir: failed to remove '" + dir + "': Invalid Path");
             }
         }
@@ -177,7 +185,7 @@ public class Terminal {
     public void mkdir(String[] args){
         if(args.length < 1)
         {
-            System.out.println("mkkdir: needs at least one argument");
+            System.out.println("mkdir: needs at least one argument");
             return;
         }
         try{
@@ -231,7 +239,7 @@ public class Terminal {
      * @param args The array of file paths to be printed or concatenated (one or two files)
      */
     public void cat(String[] args) {
-        if(args.length == 1 || args.length == 2){
+        if (args.length == 1 || args.length == 2) {
             // Iterate over each argument to process
             for (String arg : args) {
                 try {
@@ -245,7 +253,7 @@ public class Terminal {
                     System.out.println("cat: " + arg + ": Invalid path");
                 }
             }
-        }else{
+        } else {
             System.out.println("cat: Invalid number of arguments");
         }
     }
@@ -254,7 +262,7 @@ public class Terminal {
     /**
      * history command: displays an enumerated list of past commands
      */
-    public void history(){
+    public void history() {
         if (commandHistory.isEmpty()) {
             System.out.println("No commands in history");
         } else {
