@@ -1,10 +1,7 @@
 import java.io.File;
 import java.nio.file.*;
 import java.nio.file.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.io.IOException;
 
 public class Terminal {
@@ -62,7 +59,13 @@ public class Terminal {
             cd(commandArgs);
         } else if (commandName.equals("history")) {
             history();
-        } else if (commandName.equals("exit")) {
+        }else if(commandName.equals("ls")) {
+            ls(commandArgs);
+        }else if(commandName.equals("ls -r")){
+            ls(commandArgs);
+        }
+
+        else if (commandName.equals("exit")) {
             System.exit(0);
         }
     }
@@ -91,6 +94,32 @@ public class Terminal {
         for (String arg : args)
             System.out.print(arg + " ");
         System.out.println();
+    }
+
+    public void ls(String []r){
+                File[] contents = currentDirectory.toFile().listFiles();
+        try {
+            if (r.length > 0 && r[0].equals("-r")) {
+                Arrays.sort(contents, Comparator.reverseOrder());
+            }
+            else if(r.length>1){
+                System.out.println("ls: too many arguments (currently only supports one argument)");
+                return;
+            }
+            else if(r.length>0 && !r[0].equals("-r")){
+                System.out.println("ls: invalid argument");
+                return;
+            }
+            for (File file : contents) {
+                System.out.println(file.getName());
+            }
+        }
+        catch (NullPointerException e){
+            System.out.println("No such directory");
+        }
+        catch (SecurityException e){
+            System.out.println("Permission denied");
+        }
     }
 
     public boolean isEmptyDir(File dir){
