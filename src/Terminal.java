@@ -96,7 +96,7 @@ public class Terminal {
     private boolean isCommandAvailable(String command) {
         List<String> availableCommands = Arrays.asList("echo", "pwd", "cd", "ls",
                 "mkdir", "rmdir", "touch", "cp", "rm",
-                "cat", "exit", "history");
+                "cat", "exit", "history", "help");
         return availableCommands.contains(command);
     }
 
