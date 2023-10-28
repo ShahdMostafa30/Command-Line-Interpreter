@@ -13,8 +13,13 @@ public class Terminal {
         currentDirectory = Path.of(System.getProperty("user.dir"));
     }
 
-    public static void showPrompt() {
-        System.out.print("> ");
+    /**
+     * Prints the prompt of the terminal (current directory with a '>' sign)
+     */
+    public void showPrompt() {
+        // Normalize the path to remove redundant parts
+        currentDirectory = currentDirectory.normalize();
+        System.out.print(currentDirectory + "> ");
     }
 
     // Main loop of the program interface
@@ -38,9 +43,9 @@ public class Terminal {
         } else if (commandName.equals("rm")) {
             rm(commandArgs);
         } else if (commandName.equals("rmdir")) {
-                rmdir(commandArgs);
+            rmdir(commandArgs);
         } else if (commandName.equals("mkdir")) {
-                mkdir(commandArgs);
+            mkdir(commandArgs);
         } else if (commandName.equals("cat")) {
             cat(commandArgs);
         } else if (commandName.equals("pwd")) {
@@ -69,22 +74,23 @@ public class Terminal {
             System.out.print(arg + " ");
         System.out.println();
     }
-    public boolean isEmptyDir(File dir){
+
+    public boolean isEmptyDir(File dir) {
         String[] contents = dir.list();
         return contents.length == 0 || contents == null;
     }
-    public void rmdir(String[] args){
-        if(args.length > 1)
-        {
+
+    public void rmdir(String[] args) {
+        if (args.length > 1) {
             System.out.println("invalid number of arguments");
             return;
         }
 
         String dir = args[0];
-        if(dir.equals("*")){
+        if (dir.equals("*")) {
             File[] contents = currentDirectory.toFile().listFiles();
-            for(File directory : contents){
-                if(directory.isDirectory() && isEmptyDir(directory)){
+            for (File directory : contents) {
+                if (directory.isDirectory() && isEmptyDir(directory)) {
                     try {
                         Files.delete(directory.toPath());
                     } catch (IOException e) {
@@ -92,61 +98,55 @@ public class Terminal {
                     }
                 }
             }
-        }
-        else{
+        } else {
             try {
                 Path dirPath = currentDirectory.resolve(dir);
-                if(!Files.isDirectory(dirPath)){
+                if (!Files.isDirectory(dirPath)) {
                     System.out.println("rmdir: failed to remove '" + dir + "': Not a directory");
-                }
-                else if(!isEmptyDir(dirPath.toFile())){
+                } else if (!isEmptyDir(dirPath.toFile())) {
                     System.out.println("rmdir: failed to remove '" + dir + "': Directory not empty");
-                }
-                else
+                } else
                     Files.delete(dirPath);
             } catch (NoSuchFileException e) {
                 System.out.println("rmdir: failed to remove '" + dir + "': No such file or directory");
             } catch (IOException e) {
                 System.out.println("rmdir: failed to remove '" + dir + "': Permission denied");
-            }catch (InvalidPathException e){
+            } catch (InvalidPathException e) {
                 System.out.println("rmdir: failed to remove '" + dir + "': Invalid Path");
             }
         }
     }
 
-    public void mkdir(String[] args){
-        if(args.length < 1)
-        {
+    public void mkdir(String[] args) {
+        if (args.length < 1) {
             System.out.println("invalid input");
             return;
         }
 
-        for(String dir : args){
+        for (String dir : args) {
             Path dirPath = Paths.get(dir);
-            if(dirPath.isAbsolute())
-            {
-                try{
+            if (dirPath.isAbsolute()) {
+                try {
                     File directory = new File(dir);
-                    if(directory.exists())
+                    if (directory.exists())
                         System.out.println("\"Directory already exists at: \"" + directory.toPath());
-                    else{
+                    else {
                         directory.mkdir();
                     }
 
-                }catch (Exception e) {
+                } catch (Exception e) {
                     System.out.println("Error occurred while creating directory: " + e.getMessage());
                 }
-            }
-            else{
-                try{
+            } else {
+                try {
                     Path newDirPath = currentDirectory.resolve(dir);
                     File directory = new File(newDirPath.toString());
-                    if(directory.exists())
+                    if (directory.exists())
                         System.out.println("\"Directory already exists at: \"" + directory.toPath());
-                    else{
+                    else {
                         directory.mkdir();
                     }
-                } catch (InvalidPathException e){
+                } catch (InvalidPathException e) {
                     System.out.println("mkdir: failed to make directory '" + dir + "': Invalid Path");
                 } catch (Exception e) {
                     System.out.println("Error occurred while creating directory: " + e.getMessage());
@@ -157,7 +157,7 @@ public class Terminal {
 
     // rm command: removes a file
     public void rm(String[] args) {
-        if(args.length == 1){
+        if (args.length == 1) {
             String file = args[0];
             try {
                 Path filePath = currentDirectory.resolve(file);
@@ -172,7 +172,7 @@ public class Terminal {
             } catch (IOException e) {
                 System.out.println("rm: cannot remove '" + file + "': Permission denied");
             }
-        }else{
+        } else {
             System.out.println("rm: Invalid number of arguments");
         }
     }
@@ -206,7 +206,6 @@ public class Terminal {
             System.out.println("cat: Invalid number of arguments");
         }
     }
-
 
 
     /**
@@ -282,6 +281,7 @@ public class Terminal {
 
     /**
      * Entry point of the program
+     *
      * @param args The arguments passed to the program (not used)
      */
     public static void main(String[] args) {
