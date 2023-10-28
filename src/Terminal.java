@@ -117,26 +117,45 @@ public class Terminal {
         }
     }
 
+    /**
+     * isEmptyDir: checks if a directory is empty or not
+     * @param dir
+     * @return
+     */
     public boolean isEmptyDir(File dir) {
         String[] contents = dir.list();
-        return contents.length == 0 || contents == null;
+        return  contents == null ||contents.length == 0 ;
     }
 
-    public void rmdir(String[] args) {
-        if (args.length > 1) {
-            System.out.println("invalid number of arguments");
+    /**
+     * rmdir command: removes a directory
+     *
+     * @param args The array of directory paths to be removed (currently only supports one file)
+     */
+    public void rmdir(String[] args){
+        if(args.length == 0)
+        {
+            System.out.println("rmdir: missing file operand");
+            return;
+        }
+
+        else if(args.length > 1)
+        {
+            System.out.println("rmdir: too many arguments (currently only supports one argument)");
             return;
         }
 
         String dir = args[0];
         if (dir.equals("*")) {
             File[] contents = currentDirectory.toFile().listFiles();
-            for (File directory : contents) {
-                if (directory.isDirectory() && isEmptyDir(directory)) {
-                    try {
-                        Files.delete(directory.toPath());
-                    } catch (IOException e) {
-                        System.out.println("rmdir: failed to remove '" + directory.getName() + "': Permission denied");
+            if(contents != null){
+                for (File directory : contents) {
+                    if (directory.isDirectory() && isEmptyDir(directory)) {
+                        try {
+                            Files.delete(directory.toPath());
+                        } catch (IOException e) {
+                            System.out.println("rmdir: failed to remove '" + directory.getName() + "': Permission denied");
+                        }
                     }
                 }
             }
@@ -239,6 +258,7 @@ public class Terminal {
             System.out.println("cat: Invalid number of arguments");
         }
     }
+
 
     /**
      * history command: displays an enumerated list of past commands
