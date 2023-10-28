@@ -1,16 +1,21 @@
 import java.io.File;
 import java.nio.file.*;
 import java.nio.file.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 import java.io.IOException;
 
 public class Terminal {
     Parser parser;
     Path currentDirectory;
+    private ArrayList<String> commandHistory;
 
     public Terminal() {
         parser = new Parser();
         currentDirectory = Path.of(System.getProperty("user.dir"));
+        commandHistory = new ArrayList<>();
     }
 
     public static void showPrompt() {
@@ -24,7 +29,13 @@ public class Terminal {
             showPrompt();
             String command = scanner.nextLine();
             if (parser.parse(command)) {
-                chooseCommandAction();
+                String parsedCommand = parser.getCommandName();
+                if (isCommandAvailable(parsedCommand)) {
+                    commandHistory.add(command); // Add the command to the history
+                    chooseCommandAction();
+                } else {
+                    System.out.println(parsedCommand + ": command not found");
+                }
             } // else do nothing (empty command)
         }
     }
@@ -49,13 +60,25 @@ public class Terminal {
             touch(commandArgs);
         } else if (commandName.equals("cd")) {
             cd(commandArgs);
+        } else if (commandName.equals("history")) {
+            history();
         } else if (commandName.equals("exit")) {
             System.exit(0);
-        } else {
-            System.out.println(commandName + ": command not found");
         }
     }
 
+    /**
+     * Checks if a command is available in the list of supported commands.
+     *
+     * @param command The command to check for availability
+     * @return true if the command is available, false otherwise
+     */
+    private boolean isCommandAvailable(String command) {
+        List<String> availableCommands = Arrays.asList("echo", "pwd", "cd", "ls",
+                                                      "mkdir", "rmdir", "touch", "cp", "rm",
+                                                       "cat", "exit", "history");
+        return availableCommands.contains(command);
+    }
 
     // Command methods (called by chooseCommandAction)
 
@@ -69,10 +92,12 @@ public class Terminal {
             System.out.print(arg + " ");
         System.out.println();
     }
+
     public boolean isEmptyDir(File dir){
         String[] contents = dir.list();
         return contents.length == 0 || contents == null;
     }
+
     public void rmdir(String[] args){
         if(args.length > 1)
         {
@@ -155,7 +180,11 @@ public class Terminal {
         }
     }
 
-    // rm command: removes a file
+    /**
+     * rm command: removes a file
+     *
+     * @param args The array of file paths to be removed (currently only supports one file)
+     */
     public void rm(String[] args) {
         if(args.length == 1){
             String file = args[0];
@@ -177,7 +206,11 @@ public class Terminal {
         }
     }
 
-    // cat command: prints the content of a file or concatenates the content of two files and prints it
+    /**
+     * cat command: prints the content of a file or concatenates the content of two files and prints it
+     *
+     * @param args The array of file paths to be printed or concatenated (one or two files)
+     */
     public void cat(String[] args) {
         if (args.length == 1) {
             try {
@@ -207,7 +240,18 @@ public class Terminal {
         }
     }
 
-
+    /**
+     * history command: displays an enumerated list of past commands
+     */
+    public void history(){
+        if (commandHistory.isEmpty()) {
+            System.out.println("No commands in history");
+        } else {
+            for (int i = 0; i < commandHistory.size(); i++) {
+                System.out.println((i + 1) + " " + commandHistory.get(i));
+            }
+        }
+    }
 
     /**
      * pwd command: prints the current directory
