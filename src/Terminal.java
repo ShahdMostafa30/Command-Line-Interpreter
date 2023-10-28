@@ -68,25 +68,6 @@ public class Terminal {
         }
     }
 
-    public void help() {
-        System.out.println("1.help     -> prints the list of supported commands");
-        System.out.println("2.echo     -> prints the arguments passed to it");
-        System.out.println("3.pwd      -> prints the current working directory");
-        System.out.println("4.cd       -> changes the current working directory");
-        System.out.println("5.ls       -> lists the contents of the current directory");
-        System.out.println("6.ls -r    -> lists the contents of the current directory in reverse order");
-        System.out.println("7.cp       -> copies a file to a new location");
-        System.out.println("8.cp -r    -> copies a directory to a new location");
-        System.out.println("9.history  -> prints the last 5 commands");
-        System.out.println("10.mkdir   -> creates a new directory");
-        System.out.println("11.rmdir   -> removes an empty directory");
-        System.out.println("12.touch   -> creates a new file");
-        System.out.println("13.rm      -> removes a file");
-        System.out.println("14.cat     -> prints the contents of a file");
-        System.out.println("15.exit    -> exits the terminal");
-    }
-
-
     /**
      * Checks if a command is available in the list of supported commands.
      *
@@ -113,6 +94,11 @@ public class Terminal {
         System.out.println();
     }
 
+    /**
+     * ls command: lists the contents of the current directory
+     *
+     * @param args The array of arguments to print (currently only supports 1 argument, which is -r)
+     */
     public void ls(String[] args) {
         File[] contents = currentDirectory.toFile().listFiles();
         try {
@@ -175,25 +161,30 @@ public class Terminal {
         }
     }
 
-    public void mkdir(String[] args){
-        if(args.length < 1)
-        {
+    /**
+     * mkdir command: creates a directory
+     * If the directory already exists, it prints an error message
+     *
+     * @param args The array of directory paths to be created
+     */
+    public void mkdir(String[] args) {
+        if (args.length < 1) {
             System.out.println("mkdir: needs at least one argument");
             return;
         }
-        try{
-            for(String dir : args){
+        try {
+            for (String dir : args) {
                 Path DirPath = currentDirectory.resolve(dir);
                 File directory = new File(DirPath.toString());
-                if(directory.exists())
-                            System.out.println("\"Directory already exists at: \"" + directory.toPath());
-                else{
+                if (directory.exists())
+                    System.out.println("\"Directory already exists at: \"" + directory.toPath());
+                else {
                     directory.mkdir();
                 }
             }
-        } catch (InvalidPathException e){
+        } catch (InvalidPathException e) {
             System.out.println("mkdir: failed to create directory '" + args[0] + "': Invalid path");
-        } catch (SecurityException e){
+        } catch (SecurityException e) {
             System.out.println("mkdir: failed to create directory '" + args[0] + "': Permission denied");
         }
     }
@@ -250,7 +241,6 @@ public class Terminal {
             System.out.println("cat: Invalid number of arguments");
         }
     }
-
 
     /**
      * history command: displays an enumerated list of past commands
@@ -334,6 +324,27 @@ public class Terminal {
             // print error message
             System.out.println("cd: cannot change directory '" + dir + "': No such directory");
         }
+    }
+
+    /**
+     * help command: prints the list of supported commands
+     */
+    public void help() {
+        System.out.println("1.help     -> prints the list of supported commands");
+        System.out.println("2.echo     -> prints the arguments passed to it");
+        System.out.println("3.pwd      -> prints the current working directory");
+        System.out.println("4.cd       -> changes the current working directory");
+        System.out.println("5.ls       -> lists the contents of the current directory");
+        System.out.println("6.ls -r    -> lists the contents of the current directory in reverse order");
+        System.out.println("7.cp       -> copies a file to a new location");
+        System.out.println("8.cp -r    -> copies a directory to a new location");
+        System.out.println("9.history  -> prints the last 5 commands");
+        System.out.println("10.mkdir   -> creates a new directory");
+        System.out.println("11.rmdir   -> removes an empty directory");
+        System.out.println("12.touch   -> creates a new file");
+        System.out.println("13.rm      -> removes a file");
+        System.out.println("14.cat     -> prints the contents of a file");
+        System.out.println("15.exit    -> exits the terminal");
     }
 
     /**
