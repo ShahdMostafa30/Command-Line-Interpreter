@@ -3,10 +3,17 @@ import java.nio.file.*;
 import java.util.*;
 import java.io.IOException;
 
+/**
+ * Command interface: used to hold the methods of the supported commands, to be used in the commands HashMap
+ */
 interface Command {
     void execute(String[] args);
 }
 
+/**
+ * Terminal class: the main class of the program, which contains the main method and the methods of the supported commands
+ * The terminal class is responsible for executing the user commands, and printing the output.
+ */
 public class Terminal {
     Parser parser;
     Path currentDirectory;
@@ -20,6 +27,9 @@ public class Terminal {
         initCommands();
     }
 
+    /**
+     * Initializes the commands HashMap with the supported commands
+     */
     private void initCommands() {
         commands = new HashMap<>();
         // Methods that take a String[] as an argument
@@ -39,12 +49,17 @@ public class Terminal {
         commands.put("help", (String[] args) -> help());
     }
 
+    /**
+     * Prints the prompt of the terminal, which is the current directory
+     */
     public void showPrompt() {
-        currentDirectory = currentDirectory.normalize();
+        currentDirectory = currentDirectory.normalize(); // Normalize the path to remove redundant parts
         System.out.print(currentDirectory + "> ");
     }
 
-    // Main loop of the program interface
+    /**
+     * Runs the terminal interface until the user exits
+     */
     public void runInterface() {
         Scanner scanner = new Scanner(System.in);
         while (true) {
@@ -62,7 +77,9 @@ public class Terminal {
         }
     }
 
-    // Method that chooses which command to run
+    /**
+     * Executes the command that was parsed by the parser
+     */
     public void chooseCommandAction() {
         commands.get(parser.getCommandName()).execute(parser.getArgs());
     }
@@ -120,12 +137,11 @@ public class Terminal {
      *
      * @param args The array of paths of files to copy (currently only supports two files)
      */
-    public void cp(String[] args){
-        if(args.length == 0) {
+    public void cp(String[] args) {
+        if (args.length == 0) {
             System.out.println("cp: missing file operand");
             return;
-        }
-        else if(args.length > 2) {
+        } else if (args.length > 2) {
             System.out.println("cp: too many arguments (currently only supports two arguments)");
             return;
         }
@@ -135,7 +151,7 @@ public class Terminal {
         try {
             Path srcPath = currentDirectory.resolve(src);
             Path destPath = currentDirectory.resolve(dest);
-            Files.copy(srcPath, destPath , StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(srcPath, destPath, StandardCopyOption.REPLACE_EXISTING);
         } catch (InvalidPathException e) {
             System.out.println("cp: failed to copy '" + src + "': Invalid path");
         } catch (NoSuchFileException e) {
@@ -145,15 +161,16 @@ public class Terminal {
         }
     }
 
-    
+
     /**
      * isEmptyDir: checks if a directory is empty or not
+     *
      * @param dir The directory to check
      * @return true if the directory is empty, false otherwise
      */
     public boolean isEmptyDir(File dir) {
         String[] contents = dir.list();
-        return  contents == null ||contents.length == 0 ;
+        return contents == null || contents.length == 0;
     }
 
     /**
@@ -161,15 +178,11 @@ public class Terminal {
      *
      * @param args The array of directory paths to be removed (currently only supports one file)
      */
-    public void rmdir(String[] args){
-        if(args.length == 0)
-        {
+    public void rmdir(String[] args) {
+        if (args.length == 0) {
             System.out.println("rmdir: missing file operand");
             return;
-        }
-
-        else if(args.length > 1)
-        {
+        } else if (args.length > 1) {
             System.out.println("rmdir: too many arguments (currently only supports one argument)");
             return;
         }
@@ -177,7 +190,7 @@ public class Terminal {
         String dir = args[0];
         if (dir.equals("*")) {
             File[] contents = currentDirectory.toFile().listFiles();
-            if(contents != null){
+            if (contents != null) {
                 for (File directory : contents) {
                     if (directory.isDirectory() && isEmptyDir(directory)) {
                         try {

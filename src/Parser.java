@@ -1,10 +1,21 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 
+/**
+ * Parser class: Parses a command into a command name and arguments.
+ * The command name is the first word of the command.
+ * The arguments are the remaining words of the command.
+ */
 public class Parser {
     private String commandName;
     private String[] commandArgs;
 
+    /**
+     * Parses a command into a command name and arguments.
+     *
+     * @param command the full command to parse into a command name and arguments
+     * @return true if the command was parsed successfully, false otherwise (Empty)
+     */
     public boolean parse(String command) {
         command = command.trim(); // remove leading and trailing whitespace
         if (command.isEmpty())
@@ -25,10 +36,20 @@ public class Parser {
         return true;
     }
 
+    /**
+     * Gets the command name.
+     *
+     * @return the command name
+     */
     public String getCommandName() {
         return commandName;
     }
 
+    /**
+     * Gets the command arguments.
+     *
+     * @return a copy of the command arguments array
+     */
     public String[] getArgs() {
         return Arrays.copyOf(commandArgs, commandArgs.length);
     }
