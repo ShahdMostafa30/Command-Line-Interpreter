@@ -133,33 +133,81 @@ public class Terminal {
     }
 
     /**
-     * cp command: copies a file to another location
+     * cp command: copies a file/directory to another location
      *
-     * @param args The array of paths of files to copy (currently only supports two files)
+     * @param args The array of paths of files/directories to copy (currently only supports two files/directories)
      */
-    public void cp(String[] args) {
-        if (args.length == 0) {
+    public void cp(String[] args){
+        if(args.length == 0 ||(args.length ==1 && args[0] =="-r")) {
             System.out.println("cp: missing file operand");
-            return;
-        } else if (args.length > 2) {
-            System.out.println("cp: too many arguments (currently only supports two arguments)");
             return;
         }
 
-        String src = args[0];
-        String dest = args[1];
-        try {
-            Path srcPath = currentDirectory.resolve(src);
-            Path destPath = currentDirectory.resolve(dest);
-            Files.copy(srcPath, destPath, StandardCopyOption.REPLACE_EXISTING);
-        } catch (InvalidPathException e) {
-            System.out.println("cp: failed to copy '" + src + "': Invalid path");
-        } catch (NoSuchFileException e) {
-            System.out.println("cp: failed to copy '" + src + "': No such file or directory");
-        } catch (IOException e) {
-            System.out.println("cp: failed to copy '" + src + "': Permission denied");
+        else if(args.length > 3 && args[0] =="-r") {
+            System.out.println("cp: too many arguments");
+            return;
+        }
+        else if(args.length ==2 && args[0]=="-r"){
+            System.out.println("cp: missing destination file operand after '" + args[1] + "'");
+            return;
+        }
+        else if(args.length ==1 && args[0]!="-r"){
+            System.out.println("cp: missing destination file operand after '" + args[0] + "'");
+            return;
+        }
+        else{
+            String src, dest;
+            if(args.length == 3 && args[0].equals("-r")) {
+                src = args[1];
+                dest = args[2];
+            }
+            else{
+                src = args[0];
+                dest = args[1];
+            }
+            try {
+                if (args.length == 3 && args[0].equals("-r")) {
+                    copyDirectory(new File(src), new File(dest));
+                    System.out.println("Directory copied successfully.");
+                    return;
+                }
+                Path srcPath = currentDirectory.resolve(src);
+                Path destPath = currentDirectory.resolve(dest);
+                Files.copy(srcPath, destPath, StandardCopyOption.REPLACE_EXISTING);
+                System.out.println("File copied successfully.");
+
+            } catch (IOException e) {
+                System.out.println("cp: failed to copy '" + src + "': Permission denied");
+            }
         }
     }
+
+
+    // Helper method for cp -r command to copy directories
+    public static void copyDirectory(File source, File destination) throws IOException {
+        if (source.isDirectory()) {
+            // Create the destination directory if it doesn't exist
+            if (!destination.exists()) {
+                destination.mkdir();
+            }
+            // List all files and directories in the source directory
+            String[] files = source.list();
+
+            if (files != null) {
+                for (String file : files) {
+                    File srcFile = new File(source, file);
+                    File destFile = new File(destination, file);
+
+                    // Recursively copy subdirectories and their contents
+                    copyDirectory(srcFile, destFile);
+                }
+            }
+        } else {
+            // Copy a file from source to destination
+            Files.copy(source.toPath(), destination.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
 
 
     /**
