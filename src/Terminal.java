@@ -31,6 +31,7 @@ public class Terminal {
         commands.put("touch", this::touch);
         commands.put("rm", this::rm);
         commands.put("cat", this::cat);
+        commands.put("cp", this::cp);
         // Methods that take no arguments
         commands.put("pwd", (String[] args) -> pwd());
         commands.put("exit", (String[] args) -> System.exit(0));
@@ -73,10 +74,7 @@ public class Terminal {
      * @return true if the command is available, false otherwise
      */
     private boolean isCommandAvailable(String command) {
-        List<String> availableCommands = Arrays.asList("echo", "pwd", "cd", "ls",
-                "mkdir", "rmdir", "touch", "cp", "rm",
-                "cat", "exit", "history", "help");
-        return availableCommands.contains(command);
+        return commands.containsKey(command);
     }
 
     // Command methods (called by chooseCommandAction)
