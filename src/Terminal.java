@@ -68,7 +68,7 @@ public class Terminal {
             if (parser.parse(command)) {
                 String parsedCommand = parser.getCommandName();
                 if (isCommandAvailable(parsedCommand)) {
-                    commandHistory.add(command); // Add the command to the history
+                    commandHistory.add(parser.getNormalizedCommand()); // Add the command to the history
                     chooseCommandAction();
                 } else {
                     System.out.println(parsedCommand + ": command not found");
@@ -81,7 +81,8 @@ public class Terminal {
      * Executes the command that was parsed by the parser
      */
     public void chooseCommandAction() {
-        commands.get(parser.getCommandName()).execute(parser.getArgs());
+        commands.get(parser.getCommandName()) // get the command from the commands HashMap
+                .execute(parser.getArgs()); // execute the command with the arguments
     }
 
     /**
@@ -115,12 +116,12 @@ public class Terminal {
     public void ls(String[] args) {
         File[] contents = currentDirectory.toFile().listFiles();
         try {
-            if (args.length > 0 && args[0].equals("-r")) {
+            if (args.length == 1 && args[0].equals("-r")) {
                 Arrays.sort(contents, Comparator.reverseOrder());
             } else if (args.length > 1) {
                 System.out.println("ls: too many arguments (currently only supports one argument)");
                 return;
-            } else if (args.length > 0) {
+            } else if (args.length == 1) {
                 System.out.println("ls: invalid argument (currently only supports -r)");
                 return;
             }
@@ -137,45 +138,49 @@ public class Terminal {
      *
      * @param args The array of paths of files/directories to copy (currently only supports two files/directories)
      */
-    public void cp(String[] args){
-        if(args.length == 0 ||(args.length ==1 && args[0] =="-r")) {
+    public void cp(String[] args) {
+        if (args.length == 0) {
             System.out.println("cp: missing file operand");
-            return;
-        }
-
-        else if(args.length > 3 && args[0] =="-r") {
-            System.out.println("cp: too many arguments");
-            return;
-        }
-        else if(args.length ==2 && args[0]=="-r"){
+        } else if (args.length == 1) {
+            if (args[0].equals("-r"))
+                System.out.println("cp: missing file operand");
+            else
+                System.out.println("cp: missing destination file operand after '" + args[0] + "'");
+        } else if (args.length == 2 && args[0].equals("-r")) {
             System.out.println("cp: missing destination file operand after '" + args[1] + "'");
-            return;
-        }
-        else if(args.length ==1 && args[0]!="-r"){
-            System.out.println("cp: missing destination file operand after '" + args[0] + "'");
-            return;
-        }
-        else{
+        } else if (args.length == 3 && !args[0].equals("-r")) {
+            System.out.println("cp: invalid argument (currently only supports -r)");
+        } else if (args.length > 3) {
+            System.out.println("cp: too many arguments");
+        } else {
             String src, dest;
-            if(args.length == 3 && args[0].equals("-r")) {
+            boolean isRecursive = args.length == 3;
+            if (isRecursive) {
                 src = args[1];
                 dest = args[2];
-            }
-            else{
+            } else {
                 src = args[0];
                 dest = args[1];
             }
             try {
-                if (args.length == 3 && args[0].equals("-r")) {
-                    copyDirectory(new File(src), new File(dest));
-                    System.out.println("Directory copied successfully.");
-                    return;
-                }
                 Path srcPath = currentDirectory.resolve(src);
                 Path destPath = currentDirectory.resolve(dest);
-                Files.copy(srcPath, destPath, StandardCopyOption.REPLACE_EXISTING);
-                System.out.println("File copied successfully.");
-
+                if (isRecursive && !Files.isDirectory(srcPath)) {
+                    System.out.println("cp: failed to copy '" + src + "': Not a directory");
+                } else if (isRecursive) {
+                    copyDirectory(new File(srcPath.toString()), new File(destPath.toString()));
+                } else {
+                    if (Files.isRegularFile(srcPath))
+                        System.out.println("cp: failed to copy '" + src + "': Not a directory");
+                    else if (Files.exists(destPath) && Files.isDirectory(destPath))
+                        System.out.println("cp: failed to copy '" + src + ", '" + dest + "' Already exists as a directory");
+                    else
+                        Files.copy(srcPath, destPath, StandardCopyOption.REPLACE_EXISTING);
+                }
+            } catch (InvalidPathException e) {
+                System.out.println("cp: failed to copy '" + src + "': Invalid path");
+            } catch (NoSuchFileException e) {
+                System.out.println("cp: failed to copy '" + src + "': No such file or directory");
             } catch (IOException e) {
                 System.out.println("cp: failed to copy '" + src + "': Permission denied");
             }
@@ -183,7 +188,13 @@ public class Terminal {
     }
 
 
-    // Helper method for cp -r command to copy directories
+    /**
+     * copyDirectory: copies a directory and its contents to another location recursively
+     *
+     * @param source      The source directory
+     * @param destination The destination directory
+     * @throws IOException If an I/O error occurs (e.g. permission denied)
+     */
     public static void copyDirectory(File source, File destination) throws IOException {
         if (source.isDirectory()) {
             // Create the destination directory if it doesn't exist
@@ -201,24 +212,12 @@ public class Terminal {
                     // Recursively copy subdirectories and their contents
                     copyDirectory(srcFile, destFile);
                 }
-            }
+            } else
+                throw new IOException("Failed to list files in directory: " + source);
         } else {
             // Copy a file from source to destination
             Files.copy(source.toPath(), destination.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
-    }
-
-
-
-    /**
-     * isEmptyDir: checks if a directory is empty or not
-     *
-     * @param dir The directory to check
-     * @return true if the directory is empty, false otherwise
-     */
-    public boolean isEmptyDir(File dir) {
-        String[] contents = dir.list();
-        return contents == null || contents.length == 0;
     }
 
     /**
@@ -238,28 +237,32 @@ public class Terminal {
         String dir = args[0];
         if (dir.equals("*")) {
             File[] contents = currentDirectory.toFile().listFiles();
-            if (contents != null) {
+            try {
                 for (File directory : contents) {
-                    if (directory.isDirectory() && isEmptyDir(directory)) {
+                    if (directory.isDirectory()) {
                         try {
                             Files.delete(directory.toPath());
+                        } catch (DirectoryNotEmptyException e) {
+                            System.out.println("rmdir: failed to remove '" + directory.getName() + "': Directory not empty");
                         } catch (IOException e) {
                             System.out.println("rmdir: failed to remove '" + directory.getName() + "': Permission denied");
                         }
                     }
                 }
+            } catch (NullPointerException e) {
+                System.out.println("rmdir: failed to remove: Permission denied");
             }
         } else {
             try {
                 Path dirPath = currentDirectory.resolve(dir);
-                if (!Files.isDirectory(dirPath)) {
+                if (!Files.isDirectory(dirPath))
                     System.out.println("rmdir: failed to remove '" + dir + "': Not a directory");
-                } else if (!isEmptyDir(dirPath.toFile())) {
-                    System.out.println("rmdir: failed to remove '" + dir + "': Directory not empty");
-                } else
+                else
                     Files.delete(dirPath);
             } catch (NoSuchFileException e) {
                 System.out.println("rmdir: failed to remove '" + dir + "': No such file or directory");
+            } catch (DirectoryNotEmptyException e) {
+                System.out.println("rmdir: failed to remove '" + dir + "': Directory not empty");
             } catch (IOException e) {
                 System.out.println("rmdir: failed to remove '" + dir + "': Permission denied");
             } catch (InvalidPathException e) {
@@ -279,20 +282,18 @@ public class Terminal {
             System.out.println("mkdir: needs at least one argument");
             return;
         }
-        try {
-            for (String dir : args) {
+        for (String dir : args) {
+            try {
                 Path DirPath = currentDirectory.resolve(dir);
                 File directory = new File(DirPath.toString());
                 if (directory.exists())
-                    System.out.println("\"Directory already exists at: \"" + directory.toPath());
+                    System.out.println("Directory already exists at: \"" + directory.toPath() + "\"");
                 else {
                     directory.mkdir();
                 }
+            } catch (InvalidPathException e) {
+                System.out.println("mkdir: failed to create directory '" + dir + "': Invalid path");
             }
-        } catch (InvalidPathException e) {
-            System.out.println("mkdir: failed to create directory '" + args[0] + "': Invalid path");
-        } catch (SecurityException e) {
-            System.out.println("mkdir: failed to create directory '" + args[0] + "': Permission denied");
         }
     }
 
@@ -320,7 +321,7 @@ public class Terminal {
                 System.out.println("rm: failed to remove '" + args[0] + "': Invalid path");
             }
         } else {
-            System.out.println("rm: Invalid number of arguments");
+            System.out.println("rm: Invalid number of arguments (currently only supports one file)");
         }
     }
 
@@ -345,7 +346,7 @@ public class Terminal {
                 }
             }
         } else {
-            System.out.println("cat: Invalid number of arguments");
+            System.out.println("cat: Invalid number of arguments (currently only supports up to two files)");
         }
     }
 
@@ -367,7 +368,7 @@ public class Terminal {
      * pwd command: prints the current directory
      */
     public void pwd() {
-        currentDirectory = currentDirectory.normalize();
+        currentDirectory = currentDirectory.normalize();  // Normalize the path to remove redundant parts
         System.out.println(currentDirectory);
     }
 
@@ -393,6 +394,8 @@ public class Terminal {
             Files.createFile(filePath);
         } catch (FileAlreadyExistsException e) {
             // If the file already exists, do nothing (real touch simulation)
+        } catch (InvalidPathException e) {
+            System.out.println("touch: failed to create file '" + file + "': Invalid path");
         } catch (IOException e) {
             System.out.println("touch: cannot create file '" + file + "': Permission denied or invalid path/file name");
         }
@@ -425,12 +428,18 @@ public class Terminal {
 
         // If one argument is passed
         String dir = args[0];
-        Path dirPath = currentDirectory.resolve(dir);
-        if (Files.isDirectory(dirPath)) { // if the directory exists
-            currentDirectory = dirPath; // change the current directory
-        } else {
-            // print error message
-            System.out.println("cd: cannot change directory '" + dir + "': No such directory");
+        try {
+            Path dirPath = currentDirectory.resolve(dir);
+            if (Files.isDirectory(dirPath)) { // if the directory exists
+                currentDirectory = dirPath; // change the current directory
+            } else {
+                // print error message
+                System.out.println("cd: cannot change directory '" + dir + "': No such directory");
+            }
+        }
+        // If the path is invalid
+        catch (InvalidPathException e) {
+            System.out.println("cd: failed to change directory '" + dir + "': Invalid path");
         }
     }
 

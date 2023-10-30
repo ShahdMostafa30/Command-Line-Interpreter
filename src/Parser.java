@@ -53,4 +53,17 @@ public class Parser {
     public String[] getArgs() {
         return Arrays.copyOf(commandArgs, commandArgs.length);
     }
+
+    /**
+     * Gets the full command normalized (i.e. with no leading/trailing/extra whitespace).
+     *
+     * @return the full command normalized
+     */
+    public String getNormalizedCommand() {
+        StringBuilder fullCommand = new StringBuilder(commandName);
+        for (String arg : commandArgs) {
+            fullCommand.append(" ").append(arg);
+        }
+        return fullCommand.toString();
+    }
 }
