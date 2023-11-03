@@ -1,3 +1,11 @@
+/**
+ * Authors:
+ * 20210485 - Youssef Mohamed Morad
+ * 20211054 - Shahd Mostafa Mahmoud
+ * 20211090 - Maryam Osama Mohamed
+ * 20211052 - Shahd Osama Hamed
+ */
+
 import java.io.File;
 import java.nio.file.*;
 import java.util.*;
@@ -530,9 +538,7 @@ class Terminal {
         System.out.println("14.cat     -> prints the contents of a file");
         System.out.println("15.exit    -> exits the terminal");
     }
-}
 
-public class OneFileTerminal {
     /**
      * Entry point of the program
      *
