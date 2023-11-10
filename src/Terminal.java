@@ -170,10 +170,10 @@ public class Terminal {
                 } else if (isRecursive) {
                     copyDirectory(new File(srcPath.toString()), new File(destPath.toString()));
                 } else {
-                    if (Files.isRegularFile(srcPath))
-                        System.out.println("cp: failed to copy '" + src + "': Not a directory");
-                    else if (Files.exists(destPath) && Files.isDirectory(destPath))
+                    if (Files.exists(destPath) && Files.isDirectory(destPath))
                         System.out.println("cp: failed to copy '" + src + ", '" + dest + "' Already exists as a directory");
+                    else if (Files.isDirectory(srcPath))
+                        System.out.println("cp: failed to copy '" + src + "': Is a directory");
                     else
                         Files.copy(srcPath, destPath, StandardCopyOption.REPLACE_EXISTING);
                 }
@@ -297,6 +297,21 @@ public class Terminal {
         }
     }
 
+    /**
+     * pwd
+     * mkdir dir1 dir2
+     * touch f1.txt
+     * touch <current path>/f2.txt [full path]
+     * ls > f1.txt
+     * cat f1.txt
+     * wc f1.txt
+     * rmdir dir1
+     * cp f1.txt f3.txt
+     * cd dir2
+     * touch f3.txt
+     * ls
+     * history
+     */
     /**
      * rm command: removes a file
      *
